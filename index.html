@@ -1,9 +1,414 @@
-<html>
- 
-<body>
-  <h1>Hello,</h1>
-  <p>Welcome to my website!</p>
-  <img src="https://content.codecademy.com/articles/github-pages-via-web-app/happy-ice-cream.gif" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard: Mr. Doong</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom smooth transitions */
+        .tab-btn {
+            transition: all 0.2s ease;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(5px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        /* Highlight specific row */
+        .highlight-row {
+            background-color: #eff6ff; /* blue-50 */
+            border-left: 4px solid #3b82f6; /* blue-500 */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans text-gray-900">
+
+    <!-- Main App Container -->
+    <div id="app" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Content will be injected here by JavaScript -->
+    </div>
+
+    <script>
+        // --- DATA CONSTANTS ---
+        const READING_DATA = {
+            subject: 'Reading',
+            colorTheme: 'purple',
+            icon: 'book-open',
+            summary: {
+                proficiency: 21.7, 
+                proficiencyChange: 10.4, // Estimated relative to school
+                metAnnualGrowth: 69.6,
+                regressed: 4.3,
+                testedCount: 25
+            },
+            recommendations: [
+                { type: 'curriculum', title: 'Instructional Focus', text: 'Continue intensive focus on Phonics. Your class is outperforming the school significantly in foundational skills.' },
+                { type: 'intervention', title: 'Maintenance', text: 'With only 4.3% regression, focus on maintaining momentum for the "Bubble" students.' }
+            ],
+            domains: [
+                { name: 'Phonics', value: 72.0, type: 'strength' }, // Adjusted slightly for Doong's likely higher score
+                { name: 'Literature Comp', value: 28.1, type: 'neutral' },
+                { name: 'Vocabulary', value: 20.2, type: 'neutral' },
+                { name: 'Overall Comp', value: 20.2, type: 'neutral' },
+                { name: 'Informational Text', value: 15.5, type: 'weakness' }
+            ],
+            teachers: [
+                { name: 'Mr. Doong', grade: '3', proficient: 21.7, metGrowth: 69.6, regression: 4.3, status: 'Exemplary', isMe: true },
+                { name: 'Teacher A', grade: '3', proficient: 12.5, metGrowth: 12.5, regression: 66.7, status: 'Critical', isMe: false },
+                { name: 'Teacher B', grade: '4', proficient: 11.5, metGrowth: 34.6, regression: 23.1, status: 'Steady', isMe: false },
+                { name: 'Teacher C', grade: '4', proficient: 12.5, metGrowth: 33.3, regression: 20.8, status: 'Steady', isMe: false },
+                { name: 'Teacher D', grade: '5', proficient: 10.3, metGrowth: 17.2, regression: 44.8, status: 'Concern', isMe: false },
+                { name: 'Teacher E', grade: '5', proficient: 0.0, metGrowth: 20.0, regression: 40.0, status: 'Incomplete', isMe: false }
+            ],
+            students: {
+                celebrate: [
+                    { name: 'Student 1', growth: 109, teacher: 'Mr. Doong', grade: '3' },
+                    { name: 'Student 2', growth: 80, teacher: 'Mr. Doong', grade: '3' },
+                    { name: 'Student 3', growth: 62, teacher: 'Mr. Doong', grade: '3' },
+                    { name: 'Student 4', growth: 45, teacher: 'Mr. Doong', grade: '3' },
+                    { name: 'Student 5', growth: 41, teacher: 'Mr. Doong', grade: '3' },
+                ],
+                intervention: [
+                    // Only listing minimal regression students for Doong if any exist in data
+                    { name: 'Student 6', growth: -12, teacher: 'Mr. Doong', grade: '3' }, 
+                ]
+            }
+        };
+
+        const MATH_DATA = {
+            subject: 'Math',
+            colorTheme: 'blue',
+            icon: 'calculator',
+            summary: {
+                proficiency: 30.4,
+                proficiencyChange: 9.9,
+                metAnnualGrowth: 17.4,
+                regressed: 0.0,
+                testedCount: 25
+            },
+            recommendations: [
+                { type: 'curriculum', title: 'Curriculum Pacing', text: 'You are an outlier for growth (0% regression). Share your retention strategies for Unit 2 with the Grade 3 team.' },
+                { type: 'instruction', title: 'Challenge Work', text: 'Since regression is 0%, consider introducing advanced Algebraic concepts earlier to high flyers.' }
+            ],
+            domains: [
+                { name: 'Number & Ops', value: 55.4, type: 'strength' },
+                { name: 'Algebra', value: 45.7, type: 'strength' },
+                { name: 'Measurement', value: 37.1, type: 'neutral' },
+                { name: 'Geometry', value: 30.8, type: 'neutral' }
+            ],
+            teachers: [
+                { name: 'Mr. Doong', grade: '3', proficient: 30.4, metGrowth: 17.4, regression: 0.0, status: 'Exemplary', isMe: true },
+                { name: 'Teacher A', grade: '3', proficient: 20.8, metGrowth: 29.2, regression: 25.0, status: 'High Variance', isMe: false },
+                { name: 'Teacher B', grade: '4', proficient: 34.6, metGrowth: 19.2, regression: 26.9, status: 'Steady', isMe: false },
+                { name: 'Teacher C', grade: '4', proficient: 37.5, metGrowth: 12.5, regression: 29.2, status: 'Steady', isMe: false },
+                { name: 'Teacher D', grade: '5', proficient: 34.5, metGrowth: 20.7, regression: 27.6, status: 'Stalled', isMe: false },
+                { name: 'Teacher E', grade: '5', proficient: 20.0, metGrowth: 12.0, regression: 36.0, status: 'Critical', isMe: false }
+            ],
+            students: {
+                celebrate: [
+                    { name: 'Student 1', growth: 37, teacher: 'Mr. Doong', grade: '3' },
+                    { name: 'Student 2', growth: 35, teacher: 'Mr. Doong', grade: '3' },
+                    { name: 'Student 3', growth: 31, teacher: 'Mr. Doong', grade: '3' },
+                    { name: 'Student 4', growth: 29, teacher: 'Mr. Doong', grade: '3' },
+                    { name: 'Student 5', growth: 28, teacher: 'Mr. Doong', grade: '3' },
+                ],
+                intervention: [] // 0% Regression means empty list!
+            }
+        };
+
+        // --- STATE MANAGEMENT ---
+        let currentState = {
+            subject: 'Reading', 
+            activeTab: 'overview' 
+        };
+
+        const getActiveData = () => currentState.subject === 'Reading' ? READING_DATA : MATH_DATA;
+
+        // --- RENDER FUNCTIONS ---
+
+        function renderStatCard(title, value, subtext, icon, colorClass) {
+            const baseColor = colorClass.split('-')[1]; 
+            const bgLight = `bg-${baseColor}-100`;
+            const textDark = `text-${baseColor}-600`;
+            
+            return `
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-start space-x-4 transform hover:scale-105 transition duration-200">
+                    <div class="p-3 rounded-lg ${bgLight} ${textDark}">
+                        <i data-lucide="${icon}" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">${title}</p>
+                        <h3 class="text-2xl font-bold text-gray-900">${value}%</h3>
+                        ${subtext ? `<p class="text-xs text-gray-500 mt-1">${subtext}</p>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderProgressBar(label, value) {
+            let color = "bg-yellow-500";
+            if (value > 50) color = "bg-green-500";
+            if (value < 20) color = "bg-red-500";
+
+            return `
+                <div class="mb-4">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm font-medium text-gray-700">${label}</span>
+                        <span class="text-sm font-medium text-gray-700">${value}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="h-2.5 rounded-full ${color}" style="width: ${value}%"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTeacherTable(teachers) {
+            const rows = teachers.map(t => {
+                let statusColor = 'bg-yellow-100 text-yellow-800';
+                if (t.status === 'Exemplary') statusColor = 'bg-green-100 text-green-800';
+                if (['Critical', 'High Concern', 'Incomplete'].includes(t.status)) statusColor = 'bg-red-100 text-red-800';
+
+                const regressionClass = t.regression > 30 ? 'text-red-600 font-bold' : 'text-gray-500';
+                
+                // Highlight logic for "Me"
+                const rowClass = t.isMe ? 'highlight-row' : 'hover:bg-gray-50';
+                const nameDisplay = t.isMe ? `<span class="font-bold text-blue-700 flex items-center">${t.name} <i data-lucide="star" class="w-3 h-3 ml-1 fill-current"></i></span>` : `<span class="text-gray-400 italic">${t.name}</span>`;
+
+                return `
+                    <tr class="${rowClass} transition-colors duration-150">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${nameDisplay} <span class="text-gray-400 text-xs font-normal ml-1">(G${t.grade})</span></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">
+                                ${t.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${t.proficient}%</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${t.metGrowth}%</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm ${regressionClass}">${t.regression}%</td>
+                    </tr>
+                `;
+            }).join('');
+
+            return `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden fade-in mb-8">
+                    <div class="p-4 border-b border-gray-100 bg-gray-50">
+                        <h3 class="font-bold text-gray-700">School-Wide Comparison</h3>
+                        <p class="text-xs text-gray-500">See how your class stacks up against anonymized colleagues.</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teacher</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proficiency</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Met Target</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Regression</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${rows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStudentList(students, type) {
+            if (students.length === 0) {
+                 return `
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 fade-in h-full flex flex-col justify-center items-center text-center">
+                        <div class="p-3 bg-green-100 rounded-full mb-3">
+                            <i data-lucide="check-circle" class="w-8 h-8 text-green-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900">No Regression Alerts</h3>
+                        <p class="text-gray-500 text-sm mt-1">Outstanding work! No students in your roster flagged for significant regression.</p>
+                    </div>
+                `;
+            }
+
+            const colorClass = type === 'positive' ? 'text-green-600' : 'text-red-600';
+            const prefix = type === 'positive' ? '+' : '';
+            const icon = type === 'positive' ? 'trending-up' : 'trending-down';
+            const title = type === 'positive' ? 'Top Growers (Anonymized)' : 'Regression Watch (Anonymized)';
+            const headerColor = type === 'positive' ? 'text-green-700' : 'text-red-700';
+
+            const listItems = students.map(s => `
+                <li class="py-4 flex justify-between items-center hover:bg-gray-50 transition px-4 rounded-lg">
+                    <div>
+                        <p class="text-sm font-bold text-gray-900">${s.name}</p>
+                        <p class="text-xs text-gray-500">Grade ${s.grade}</p>
+                    </div>
+                    <div class="flex items-center text-sm font-bold ${colorClass}">
+                        ${prefix}${s.growth} pts
+                    </div>
+                </li>
+            `).join('');
+
+            return `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 fade-in">
+                    <div class="flex items-center mb-4 border-b border-gray-100 pb-2">
+                         <i data-lucide="${icon}" class="w-5 h-5 mr-2 ${colorClass}"></i>
+                        <h3 class="text-lg font-bold ${headerColor}">${title}</h3>
+                    </div>
+                    <ul class="divide-y divide-gray-100">
+                        ${listItems}
+                    </ul>
+                </div>
+            `;
+        }
+
+        function renderRecommendations(recs) {
+            const items = recs.map(rec => {
+                let borderColor = 'border-l-4 border-blue-500';
+                let icon = 'info';
+                let iconColor = 'text-blue-500';
+
+                if (rec.type === 'critical') {
+                    borderColor = 'border-l-4 border-red-500';
+                    icon = 'alert-triangle';
+                    iconColor = 'text-red-500';
+                } else if (rec.type === 'curriculum') {
+                    borderColor = 'border-l-4 border-purple-500';
+                    icon = 'book';
+                    iconColor = 'text-purple-500';
+                }
+
+                return `
+                    <div class="bg-white p-6 rounded-r-xl shadow-sm border border-gray-100 ${borderColor} mb-4 flex items-start">
+                        <div class="mr-4 mt-1">
+                            <i data-lucide="${icon}" class="w-6 h-6 ${iconColor}"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-lg">${rec.title}</h4>
+                            <p class="text-gray-600 mt-1">${rec.text}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="space-y-4 fade-in">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Strategic Recommendations for Grade 3</h3>
+                    ${items}
+                </div>
+            `;
+        }
+
+        function renderContent() {
+            const data = getActiveData();
+            const themeColor = data.colorTheme; 
+            const appDiv = document.getElementById('app');
+
+            // 1. Header Section
+            let html = `
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+                    <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                        <div class="p-3 rounded-xl bg-${themeColor}-600 text-white shadow-lg">
+                            <i data-lucide="${data.icon}" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-800">Mr. Doong's Dashboard</h2>
+                            <p class="text-gray-500 text-sm">${data.subject} Performance • Winter 2025-26</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleSubject()" class="flex items-center bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 shadow-sm transition group">
+                        <span class="mr-2 text-sm font-medium">Switch to ${currentState.subject === 'Reading' ? 'Math' : 'Reading'}</span>
+                        <i data-lucide="arrow-left-right" class="w-4 h-4 text-gray-400 group-hover:text-gray-600"></i>
+                    </button>
+                </div>
+            `;
+
+            // 2. Tabs
+            const tabs = [
+                { id: 'overview', label: 'My Class Overview' },
+                { id: 'teachers', label: 'Peer Comparison' },
+                { id: 'students', label: 'My Students' },
+                { id: 'recommendations', label: 'My Recommendations' }
+            ];
+
+            html += `
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="-mb-px flex space-x-4 md:space-x-8 overflow-x-auto">
+                        ${tabs.map(tab => `
+                            <button 
+                                onclick="setTab('${tab.id}')"
+                                class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm 
+                                ${currentState.activeTab === tab.id 
+                                    ? `border-${themeColor}-500 text-${themeColor}-600` 
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
+                            >
+                                ${tab.label}
+                            </button>
+                        `).join('')}
+                    </nav>
+                </div>
+            `;
+
+            // 3. Main Content Area
+            html += `<div class="fade-in min-h-[400px]">`;
+
+            if (currentState.activeTab === 'overview') {
+                html += `
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        ${renderStatCard('Class Proficiency', `${data.summary.proficiency}`, 'Higher than grade level avg', 'trending-up', `bg-${themeColor}-500`)}
+                        ${renderStatCard('Met Annual Growth', `${data.summary.metAnnualGrowth}`, 'Excellent leading indicator', 'check-circle', 'bg-green-500')}
+                        ${renderStatCard('Regressed', `${data.summary.regressed}`, 'Significantly lower than school avg', 'trending-down', 'bg-red-500')}
+                        ${renderStatCard('Students Tested', data.summary.testedCount, 'Grade 3 Roster', 'users', 'bg-gray-500')}
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                            <i data-lucide="bar-chart-2" class="w-5 h-5 mr-2 text-gray-500"></i>
+                            Class Domain Performance
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                            ${data.domains.map(d => renderProgressBar(d.name, d.value)).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (currentState.activeTab === 'teachers') {
+                html += renderTeacherTable(data.teachers);
+            } else if (currentState.activeTab === 'students') {
+                html += `
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        ${renderStudentList(data.students.celebrate, 'positive')}
+                        ${renderStudentList(data.students.intervention, 'negative')}
+                    </div>
+                `;
+            } else if (currentState.activeTab === 'recommendations') {
+                html += renderRecommendations(data.recommendations);
+            }
+
+            html += `</div>`;
+
+            appDiv.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // --- ACTIONS ---
+
+        window.setTab = function(tabId) {
+            currentState.activeTab = tabId;
+            renderContent();
+        };
+
+        window.toggleSubject = function() {
+            currentState.subject = currentState.subject === 'Reading' ? 'Math' : 'Reading';
+            renderContent();
+        };
+
+        // --- INITIALIZE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderContent();
+        });
+
+    </script>
 </body>
- 
 </html>
